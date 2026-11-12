@@ -1,0 +1,102 @@
+
+#include <iostream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <cstring>
+using namespace std;
+
+int main()
+{
+    int pipe1[2], pipe2[2];
+    pid_t pid;
+
+    // Create two pipes
+    if (pipe(pipe1) == -1 || pipe(pipe2) == -1)
+    {
+        cout << "Pipe creation failed!" << endl;
+        return 1;
+    }
+
+    // Create child process
+    pid = fork();
+
+    if (pid < 0)
+    {
+        cout << "Fork failed!" << endl;
+        return 1;
+    }
+
+    if (pid > 0)
+    {
+        // PARENT PROCESS
+
+        close(pipe1[0]); // Close unused read end of pipe1
+        close(pipe2[1]); // Close unused write end of pipe2
+
+        char filename[256];
+
+        cout << "Enter file pathname: ";
+        cin.getline(filename, 256);
+
+        // Send filename to child
+        write(pipe1[1], filename, strlen(filename) + 1);
+        close(pipe1[1]);
+
+        // Receive file contents from child
+        cout << "\nFile Contents:\n";
+
+        char buffer[1024];
+        int bytes;
+
+        while ((bytes = read(pipe2[0], buffer, sizeof(buffer))) > 0)
+        {
+            cout.write(buffer, bytes);
+        }
+
+        close(pipe2[0]);
+
+        wait(NULL);
+    }
+    else
+    {
+        // CHILD PROCESS
+
+        close(pipe1[1]); // Close unused write end of pipe1
+        close(pipe2[0]); // Close unused read end of pipe2
+
+        char filename[256] = {0};
+
+        // Read filename from parent
+        read(pipe1[0], filename, sizeof(filename));
+        close(pipe1[0]);
+
+        // Open the requested file
+        int fd = open(filename, O_RDONLY);
+
+        if (fd == -1)
+        {
+            const char *msg = "Error: Unable to open file.\n";
+            write(pipe2[1], msg, strlen(msg));
+        }
+        else
+        {
+            char buffer[1024];
+            int bytes;
+
+            // Read file and send contents to parent
+            while ((bytes = read(fd, buffer, sizeof(buffer))) > 0)
+            {
+                write(pipe2[1], buffer, bytes);
+            }
+
+            close(fd);
+        }
+
+        close(pipe2[1]);
+        _exit(0);
+    }
+
+    return 0;
+}

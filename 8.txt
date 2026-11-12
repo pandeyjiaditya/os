@@ -1,0 +1,199 @@
+
+#include iostream
+#include vector
+#include algorithm
+#include cstdlib
+using namespace std;
+
+ Display sequence and total head movement
+void display(string name, vectorint path, int head)
+{
+    int movement = 0;
+
+    cout  n  name  n;
+    cout  Head Movement   head;
+
+    for (int x  path)
+    {
+        cout   -   x;
+        movement += abs(head - x);
+        head = x;
+    }
+
+    cout  nTotal Head Movement   movement  endl;
+}
+
+ SSTF Algorithm
+void SSTF(vectorint request, int head)
+{
+    vectorint path;
+    int n = request.size();
+
+    vectorbool visited(n, false);
+
+    for (int i = 0; i  n; i++)
+    {
+        int minDistance = 1000000;
+        int index = -1;
+
+        for (int j = 0; j  n; j++)
+        {
+            int distance = abs(head - request[j]);
+
+            if (!visited[j] &&
+                (distance  minDistance 
+                (distance == minDistance &&
+                 request[j]  head)))
+            {
+                minDistance = distance;
+                index = j;
+            }
+        }
+
+        visited[index] = true;
+        path.push_back(request[index]);
+        head = request[index];
+    }
+
+    display(SSTF, path, request.empty()  0  request[0]  replaced below );
+}
+
+ SCAN Algorithm
+void SCAN(vectorint request, int head, int diskSize)
+{
+    vectorint left, right, path;
+
+    for (int x  request)
+    {
+        if (x  head)
+            left.push_back(x);
+        else
+            right.push_back(x);
+    }
+
+    sort(left.begin(), left.end(), greaterint());
+    sort(right.begin(), right.end());
+
+     Move towards higher cylinders first
+    for (int x  right)
+        path.push_back(x);
+
+     Reach the last cylinder
+    if (head != diskSize - 1)
+        path.push_back(diskSize - 1);
+
+     Reverse direction
+    for (int x  left)
+        path.push_back(x);
+
+     Calculate movement
+    display(SCAN, path, head);
+}
+
+ C-LOOK Algorithm
+void CLOOK(vectorint request, int head)
+{
+    vectorint left, right, path;
+
+    for (int x  request)
+    {
+        if (x  head)
+            left.push_back(x);
+        else
+            right.push_back(x);
+    }
+
+    sort(left.begin(), left.end());
+    sort(right.begin(), right.end());
+
+     Service higher requests first
+    for (int x  right)
+        path.push_back(x);
+
+     Jump to lowest request
+    for (int x  left)
+        path.push_back(x);
+
+    display(C-LOOK, path, head);
+}
+
+int main()
+{
+    int n, head, diskSize;
+
+    cout  Enter number of requests ;
+    cin  n;
+
+    vectorint request(n);
+
+    cout  Enter request queue ;
+    for (int i = 0; i  n; i++)
+        cin  request[i];
+
+    cout  Enter initial head position ;
+    cin  head;
+
+    cout  Enter disk size ;
+    cin  diskSize;
+
+    if (n = 0  diskSize = 0 
+        head  0  head = diskSize)
+    {
+        cout  Invalid input!  endl;
+        return 1;
+    }
+
+    for (int x  request)
+    {
+        if (x  0  x = diskSize)
+        {
+            cout  Invalid request position!  endl;
+            return 1;
+        }
+    }
+
+    cout  nInitial direction Higher cylinder numbersn;
+
+     Save initial head position
+    int initialHead = head;
+
+     SSTF
+    {
+        vectorint remaining = request;
+        vectorint path;
+        vectorbool visited(n, false);
+        int current = initialHead;
+
+        for (int i = 0; i  n; i++)
+        {
+            int index = -1;
+            int minDistance = 1000000;
+
+            for (int j = 0; j  n; j++)
+            {
+                int distance = abs(current - request[j]);
+
+                if (!visited[j] &&
+                    (distance  minDistance 
+                    (distance == minDistance &&
+                     request[j]  current)))
+                {
+                    minDistance = distance;
+                    index = j;
+                }
+            }
+
+            visited[index] = true;
+            path.push_back(request[index]);
+            current = request[index];
+        }
+
+        display(SSTF, path, initialHead);
+    }
+
+    SCAN(request, initialHead, diskSize);
+
+    CLOOK(request, initialHead);
+
+    return 0;
+}

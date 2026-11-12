@@ -1,0 +1,226 @@
+#include<bits/stdc++.h>
+#include <sys/wait.h>
+
+using namespace std;
+
+// Bubble Sort - Ascending Order
+void bubbleSort(int arr[], int n)
+{
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (arr[j] > arr[j + 1])
+            {
+                swap(arr[j], arr[j + 1]);
+            }
+        }
+    }
+}
+
+// Bubble Sort - Descending Order
+void bubbleSort2(int arr[], int n)
+{
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (arr[j] < arr[j + 1])
+            {
+                swap(arr[j], arr[j + 1]);
+            }
+        }
+    }
+}
+
+int main()
+{
+    int n;
+
+    cout << "Enter number of elements: ";
+    cin >> n;
+
+    if (n <= 0)
+    {
+        cout << "Invalid array size!" << endl;
+        return 1;
+    }
+
+    int *arr = new int[n];
+
+    cout << "Enter " << n << " integers: ";
+    for (int i = 0; i < n; i++)
+    {
+        cin >> arr[i];
+    }
+
+    // Create child process
+    pid_t pid = fork();
+
+    if (pid < 0)
+    {
+        cout << "Fork failed!" << endl;
+        delete[] arr;
+        return 1;
+    }
+
+    // Child Process
+    else if (pid == 0)
+    {
+        cout << "\nChild Process Started" << endl;
+        cout << "Child PID: " << getpid() << endl;
+        cout << "Parent PID: " << getppid() << endl;
+
+        bubbleSort(arr, n);
+
+        cout << "Array sorted by Child (Ascending): ";
+        for (int i = 0; i < n; i++)
+        {
+            cout << arr[i] << " ";
+        }
+
+        cout << endl;
+
+       
+    }
+
+    // Parent Process
+    else
+    {
+        cout << "\nParent Process Started" << endl;
+        cout << "Parent PID: " << getpid() << endl;
+        cout << "Child PID: " << pid << endl;
+
+        bubbleSort2(arr, n);
+
+        cout << "Array sorted by Parent (Descending): ";
+        for (int i = 0; i < n; i++)
+        {
+            cout << arr[i] << " ";
+        }
+
+        cout << endl;
+
+    
+    
+    
+     int status;
+        waitpid(pid, &status, 0);
+
+        if (WIFEXITED(status))
+        {
+            cout << "Child terminated with exit status: "
+                 << WEXITSTATUS(status) << endl;
+        }
+
+        cout << "Parent process completed." << endl;
+
+        delete[] arr;
+    }
+
+    return 0;
+}
+
+
+// zombie
+
+
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+using namespace std;
+
+int main()
+{
+    pid_t pid = fork();
+
+    if (pid < 0)
+    {
+        cout << "Fork failed!" << endl;
+        return 1;
+    }
+
+    // Child Process
+    else if (pid == 0)
+    {
+        cout << "Child Process Started" << endl;
+        cout << "Child PID: " << getpid() << endl;
+
+        cout << "Child is terminating..." << endl;
+        _exit(0);
+    }
+
+    // Parent Process
+    else
+    {
+        cout << "Parent Process Started" << endl;
+        cout << "Parent PID: " << getpid() << endl;
+        cout << "Child PID: " << pid << endl;
+
+        cout << "\nParent is sleeping for 15 seconds..." << endl;
+        cout << "During this time, child becomes a zombie." << endl;
+
+        sleep(15);
+
+        // Collect child exit status
+        int status;
+        waitpid(pid, &status, 0);
+
+        cout << "\nParent collected child status." << endl;
+        cout << "Zombie process removed." << endl;
+    }
+
+    return 0;
+}
+
+
+//orphan
+
+
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+using namespace std;
+
+int main()
+{
+    pid_t pid = fork();
+
+    if (pid < 0)
+    {
+        cout << "Fork failed!" << endl;
+        return 1;
+    }
+
+    // Child Process
+    else if (pid == 0)
+    {
+        cout << "\nChild Process Started" << endl;
+        cout << "Child PID: " << getpid() << endl;
+
+        cout << "Original Parent PID: " << getppid() << endl;
+
+        cout << "\nChild is sleeping for 5 seconds..." << endl;
+
+        sleep(5);
+
+        cout << "\nParent has terminated." << endl;
+        cout << "Child is now an orphan process." << endl;
+
+        cout << "New Parent PID: " << getppid() << endl;
+
+        cout << "Child Process Completed." << endl;
+    }
+
+    // Parent Process
+    else
+    {
+        cout << "Parent Process Started" << endl;
+        cout << "Parent PID: " << getpid() << endl;
+        cout << "Child PID: " << pid << endl;
+
+        cout << "\nParent is terminating..." << endl;
+    }
+
+    return 0;
+}

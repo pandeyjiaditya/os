@@ -1,0 +1,106 @@
+
+#!/bin/bash
+
+FILE="addressbook.txt"
+
+while true
+do
+    echo "========== ADDRESS BOOK =========="
+    echo "1. Create Address Book"
+    echo "2. View Address Book"
+    echo "3. Insert a Record"
+    echo "4. Delete a Record"
+    echo "5. Modify a Record"
+    echo "6. Exit"
+    echo "=================================="
+
+    read -p "Enter your choice: " choice
+
+    case $choice in
+
+    1)
+        if [ -f "$FILE" ]; then
+            echo "Address book already exists."
+        else
+            touch "$FILE"
+            echo "Address book created successfully."
+        fi
+        ;;
+
+    2)
+        if [ -f "$FILE" ]; then
+            if [ -s "$FILE" ]; then
+                echo "------ Address Book Records ------"
+                cat "$FILE"
+            else
+                echo "Address book is empty."
+            fi
+        else
+            echo "Address book does not exist. Create it first."
+        fi
+        ;;
+
+    3)
+        if [ -f "$FILE" ]; then
+            read -p "Enter Name: " name
+            read -p "Enter Phone Number: " phone
+            read -p "Enter Email: " email
+
+            echo "$name:$phone:$email" >> "$FILE"
+            echo "Record inserted successfully."
+        else
+            echo "Create address book first."
+        fi
+        ;;
+
+    4)
+        if [ -f "$FILE" ]; then
+            read -p "Enter name to delete: " name
+
+            if grep -q "^$name:" "$FILE"; then
+                grep -v "^$name:" "$FILE" > temp.txt
+                mv temp.txt "$FILE"
+                echo "Record deleted successfully."
+            else
+                echo "Record not found."
+            fi
+        else
+            echo "Address book does not exist."
+        fi
+        ;;
+
+    5)
+        if [ -f "$FILE" ]; then
+            read -p "Enter name to modify: " name
+
+            if grep -q "^$name:" "$FILE"; then
+                read -p "Enter new Name: " newname
+                read -p "Enter new Phone Number: " newphone
+                read -p "Enter new Email: " newemail
+
+                grep -v "^$name:" "$FILE" > temp.txt
+                echo "$newname:$newphone:$newemail" >> temp.txt
+                mv temp.txt "$FILE"
+
+                echo "Record modified successfully."
+            else
+                echo "Record not found."
+            fi
+        else
+            echo "Address book does not exist."
+        fi
+        ;;
+
+    6)
+        echo "Exiting Address Book. Thank you!"
+        exit 0
+        ;;
+
+    *)
+        echo "Invalid choice. Please try again."
+        ;;
+
+    esac
+
+    echo
+done

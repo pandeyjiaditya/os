@@ -1,0 +1,161 @@
+
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    int n, m;
+
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    cout << "Enter number of resources: ";
+    cin >> m;
+
+    if (n <= 0 || m <= 0 || n > 20 || m > 20)
+    {
+        cout << "Invalid number of processes or resources!" << endl;
+        return 1;
+    }
+
+    int allocation[20][20];
+    int maximum[20][20];
+    int need[20][20];
+    int available[20];
+    int work[20];
+
+    bool finish[20] = {false};
+    int safeSequence[20];
+
+    // Input Allocation Matrix
+    cout << "\nEnter Allocation Matrix:\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            cin >> allocation[i][j];
+        }
+    }
+
+    // Input Maximum Matrix
+    cout << "\nEnter Maximum Matrix:\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            cin >> maximum[i][j];
+        }
+    }
+
+    // Input Available Resources
+    cout << "\nEnter Available Resources:\n";
+
+    for (int j = 0; j < m; j++)
+    {
+        cin >> available[j];
+    }
+
+    // Calculate Need Matrix
+    cout << "\nNeed Matrix:\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            if (maximum[i][j] < allocation[i][j] ||
+                allocation[i][j] < 0 || maximum[i][j] < 0)
+            {
+                cout << "Invalid resource values!" << endl;
+                return 1;
+            }
+
+            need[i][j] = maximum[i][j] - allocation[i][j];
+
+            cout << need[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    // Initialize Work = Available
+    for (int j = 0; j < m; j++)
+    {
+        if (available[j] < 0)
+        {
+            cout << "Invalid available resources!" << endl;
+            return 1;
+        }
+
+        work[j] = available[j];
+    }
+
+    // Banker's Safety Algorithm
+    int count = 0;
+
+    while (count < n)
+    {
+        bool found = false;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (finish[i] == false)
+            {
+                bool canExecute = true;
+
+                for (int j = 0; j < m; j++)
+                {
+                    if (need[i][j] > work[j])
+                    {
+                        canExecute = false;
+                        break;
+                    }
+                }
+
+                if (canExecute)
+                {
+                    for (int j = 0; j < m; j++)
+                    {
+                        work[j] += allocation[i][j];
+                    }
+
+                    safeSequence[count] = i;
+                    finish[i] = true;
+                    count++;
+
+                    found = true;
+                }
+            }
+        }
+
+        if (found == false)
+        {
+            break;
+        }
+    }
+
+    // Display Result
+    if (count == n)
+    {
+        cout << "\nSystem is in SAFE STATE." << endl;
+
+        cout << "Safe Sequence: ";
+
+        for (int i = 0; i < n; i++)
+        {
+            cout << "P" << safeSequence[i];
+
+            if (i != n - 1)
+                cout << " -> ";
+        }
+
+        cout << endl;
+    }
+    else
+    {
+        cout << "\nSystem is in UNSAFE STATE." << endl;
+        cout << "Safe sequence does not exist." << endl;
+    }
+
+    return 0;
+}
